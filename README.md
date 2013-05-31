@@ -1,4 +1,5 @@
-Datetime Picker Plugin for jQuery/Bootstrap
+Datetime Picker Plugin for jQuery
+Requires either Bootstrap Datepicker or Jquery UI DatePicker
 ========================
 
 [<img src="http://jonthornton.github.com/jquery-timepicker/lib/screenshot.png" alt="datetime picker screenshot" />]
@@ -13,9 +14,14 @@ However, at the time of downloading the example had falling out of sync with the
 Requirements
 ------------
 * [jQuery](http://jquery.com/) (>= 1.7)
-* [Bootstrap](http://twitter.github.com/bootstrap/) 2.0.4+
 * [jquery-timepicker](https://github.com/jonthornton/jquery-timepicker)
+
+If bootstrap datepicker is used
+* [Bootstrap](http://twitter.github.com/bootstrap/) 2.0.4+
 * [bootstrap-datepicker](https://github.com/eternicode/bootstrap-datepicker)
+
+If jquery ui datepicker is used
+* [jQuery UI]
 
 Installation
 ------------
