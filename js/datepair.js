@@ -136,14 +136,14 @@ var DatePair = function (shouldSetToNow) {
         // end time picker, else use a minimal display.
         if (timeDelta < (this.oneHourMS * 24 / 1000)) {
             startSeconds = this.startTime.timepicker('getSecondsFromMidnight');
-            // TODO: Add duration view back in once github issue 1408 is
-            // resolved.
             this.endTime.timepicker('option', 'showDuration', false);
-            //this.endTime.timepicker('option', 'minTime', startSeconds + 30 * 60);
-            //this.endTime.timepicker('option', 'durationTime', startSeconds);
-            //this.endTime.timepicker('option', 'showDuration', true);
+            this.endTime.timepicker('option', 'minTime', startSeconds + 30 * 60);
+            this.endTime.timepicker('option', 'maxTime', '12am');
+            this.endTime.timepicker('option', 'durationTime', startSeconds);
+            this.endTime.timepicker('option', 'showDuration', true);
         } else {
             this.endTime.timepicker('option', 'minTime', null);
+            this.endTime.timepicker('option', 'maxTime', null);
             this.endTime.timepicker('option', 'showDuration', false);
         }
     };
@@ -169,6 +169,12 @@ var DatePair = function (shouldSetToNow) {
             startDate,
             startSeconds;
         startDate = new Date(this.startDate.val());
+
+        // Check for NaN.. should be logging an error here
+        if (isNaN(startDate)) {
+            return;
+        }
+
         startSeconds = this.startTime.timepicker('getSecondsFromMidnight');
         date = new Date(startDate.getTime() + startSeconds * 1000);
         return date;
@@ -183,6 +189,12 @@ var DatePair = function (shouldSetToNow) {
             endDate,
             endSeconds;
         endDate = new Date(this.endDate.val());
+
+        // Check for NaN.. should be logging an error here
+        if (isNaN(endDate)) {
+            return;
+        }
+
         endSeconds = this.endTime.timepicker('getSecondsFromMidnight');
         date = new Date(endDate.getTime()  + endSeconds * 1000);
         return date;
