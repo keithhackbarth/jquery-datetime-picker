@@ -328,3 +328,8 @@ var DatePair = function (shouldSetToNow, dateTimeObjects) {
         return thisDatePair;
     }(this));
 };
+
+// Initialize on load
+$(function() {
+    var datePair = new DatePair(true);
+});
