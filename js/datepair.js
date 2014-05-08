@@ -1,4 +1,9 @@
 /*jshint jquery:true */
+/*global LOCALE_CODE */
+
+if (typeof LOCALE_CODE != 'undefined') {
+    var LOCALE_CODE = 'en';
+}
 
 /** Utility for correlated start / end date time selectors.
  *
@@ -7,7 +12,7 @@
  * - http://jonthornton.github.io/jquery-timepicker/
  */
 
-var DatePair = function (shouldSetToNow, dateTimeObjects) {
+var DatePair = function (shouldSetToNow, dateTimeObjects, highlightAdvance) {
 
     /** DOM state used by DatePair.
      *
@@ -52,6 +57,14 @@ var DatePair = function (shouldSetToNow, dateTimeObjects) {
         this.verifyStartEnd();
     };
 
+    /* Translate a date into a javascript time object
+        Assumes that time is in US format '11/13/2013'
+    */
+    this.dateToTime = function (value) {
+        var splitval = value.split(/[/-]/);
+        return new Date(splitval[2], splitval[0] - 1, splitval[1]);
+    };
+
     /** Set entry time to now with a duration of one hour.
      */
     this.setToNow = function () {
@@ -72,6 +85,7 @@ var DatePair = function (shouldSetToNow, dateTimeObjects) {
         // Update widget state
         this.setStartDateTime(now);
         this.setEndDateTime(inOneHour);
+        this.updateEndTime(now - inOneHour);
     };
 
     /** Utility configuring widgets associated with DOM elements.
@@ -79,17 +93,20 @@ var DatePair = function (shouldSetToNow, dateTimeObjects) {
     this.hookUpWidgets = function () {
         var thisDatePair = this;
 
-        // Starti date and time
+        // Start date and time
         this.startDate.datepicker({
             'autoclose': true,
-            'todayBtn': true,
             'todayHighlight': true,
-            'startDate': '+0d',
-            'endDate': '+2m'
+            'startDate': new Date(),
+            'endDate': '+2m',
+            'language': LOCALE_CODE
         }).change(function () {
             thisDatePair.updateEndTime(thisDatePair.priorTimeDelta);
             thisDatePair.verifyStartEnd();    // Update text box
-            thisDatePair.startTime[0].focus();    // Highlight time stamp
+
+            if (highlightAdvance) {
+                thisDatePair.startTime[0].focus();    // Highlight time stamp
+            }
         });
         this.startTime.timepicker({
             'timeFormat': 'g:ia',
@@ -102,19 +119,29 @@ var DatePair = function (shouldSetToNow, dateTimeObjects) {
         // End date and time
         this.endDate.datepicker({
             'autoclose': true,
-            'startDate': '+0d',
-            'endDate': '+2m'
+            'startDate': new Date(),
+            'endDate': '+2m',
+            'language': LOCALE_CODE
         }).change(function () {
             thisDatePair.verifyStartEnd();   // Update text box
             thisDatePair.priorTimeDelta = thisDatePair.getTimeDelta();
             thisDatePair.updateEndTime(thisDatePair.priorTimeDelta);
-            thisDatePair.endTime[0].focus();    // Highlight time stamp
+
+            if (highlightAdvance) {
+                thisDatePair.endTime[0].focus();    // Highlight time stamp
+            }
         }).data('datepicker');
         this.endTime.timepicker({
             'timeFormat': 'g:ia',
             'scrollDefaultNow': true
         }).change(function () {
-            thisDatePair.priorTimeDelta = thisDatePair.getTimeDelta();
+            // if we accidentally loop around midnight...
+            // then subtract 24 hours (86400 seconds) from the delta
+            if (thisDatePair.priorTimeDelta <= 86400 && thisDatePair.getTimeDelta() >= 86400) {
+                thisDatePair.priorTimeDelta = thisDatePair.getTimeDelta() - 86400;
+            } else {
+                thisDatePair.priorTimeDelta = thisDatePair.getTimeDelta();
+            }
             thisDatePair.updateEndTime(thisDatePair.priorTimeDelta);
             thisDatePair.verifyStartEnd();    // Update text box
         });
@@ -144,7 +171,7 @@ var DatePair = function (shouldSetToNow, dateTimeObjects) {
         if (timeDelta < (this.oneHourMS * 24 / 1000)) {
             startSeconds = this.startTime.timepicker('getSecondsFromMidnight');
             this.endTime.timepicker('option', 'minTime', startSeconds + 30 * 60);
-            this.endTime.timepicker('option', 'maxTime', '12:00pm');
+            this.endTime.timepicker('option', 'maxTime', '11:30pm');
             this.endTime.timepicker('option', 'durationTime', startSeconds);
             this.endTime.timepicker('option', 'showDuration', true);
         } else {
@@ -174,7 +201,7 @@ var DatePair = function (shouldSetToNow, dateTimeObjects) {
         var date,
             startDate,
             startSeconds;
-        startDate = new Date(this.startDate.val());
+        startDate = this.dateToTime(this.startDate.val());
         startSeconds = this.startTime.timepicker('getSecondsFromMidnight');
         date = new Date(startDate.getTime() + startSeconds * 1000);
         return date;
@@ -188,7 +215,7 @@ var DatePair = function (shouldSetToNow, dateTimeObjects) {
         var date,
             endDate,
             endSeconds;
-        endDate = new Date(this.endDate.val());
+        endDate = this.dateToTime(this.endDate.val());
         endSeconds = this.endTime.timepicker('getSecondsFromMidnight');
         date = new Date(endDate.getTime()  + endSeconds * 1000);
         return date;
@@ -217,13 +244,8 @@ var DatePair = function (shouldSetToNow, dateTimeObjects) {
      * param {Date} End Date object.
      */
     this.setEndDateTime = function (date) {
-        var endDate = new Date(date.getFullYear(), date.getMonth(), date.getDate());
-
-        //if end time is 11:30pm, change end date to start date
-        if((date.getHours() + ":" + date.getMinutes()) ==  "23:30"
-            && this.getTimeDelta() < (this.oneHourMS * 24)) {
-            endDate.setDate(this.getStartDateTime().getDate());
-        }
+        var startDate = this.getStartDateTime(),
+            endDate = new Date(date.getFullYear(), date.getMonth(), date.getDate());
 
         // Check for NaN.. should be logging an error here
         if (isNaN(endDate)) {
@@ -284,8 +306,7 @@ var DatePair = function (shouldSetToNow, dateTimeObjects) {
         var configurations,
             timeCookie;
         configurations = {
-            path: '/',        // set globally for the site
-            expires: 1        // one hour expiration
+            path: '/'          // set globally for the site
         };
         timeCookie = {
             startDateTime: this.getStartDateTime(),
@@ -313,9 +334,9 @@ var DatePair = function (shouldSetToNow, dateTimeObjects) {
         hourString = (hourString === '0 hours') ? '': hourString;
         dateTimeDeltaMinutes -= (hourInt * 60);
 
-        minuteString = dateTimeDeltaMinutes + ' minutes';
-        minuteString = (minuteString === '1 minutes') ? '1 minute': minuteString;
-        minuteString = (minuteString === '0 minutes') ? '': minuteString;
+        minuteString = dateTimeDeltaMinutes + ' mins';
+        minuteString = (minuteString === '1 min') ? '1 min': minuteString;
+        minuteString = (minuteString === '0 mins') ? '': minuteString;
 
         $('.output-duration').text(dateString + ' ' + hourString + ' ' + minuteString);
     };
