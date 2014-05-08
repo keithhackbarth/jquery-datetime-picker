@@ -2,7 +2,7 @@ Datetime Picker Plugin for jQuery
 =================================
 With either Bootstrap Datepicker or Jquery UI DatePicker
 ----------------------------------
-[<img src="http://jonthornton.github.com/jquery-timepicker/lib/screenshot.png" alt="datetime picker screenshot" />]
+[<img src="https://raw.githubusercontent.com/keithhackbarth/jquery-datetime-picker/master/img/example.png" alt="datetime picker screenshot" />]
 
 Description
 -----------
