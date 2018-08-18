@@ -7,7 +7,7 @@ With either Bootstrap Datepicker or Jquery UI DatePicker
 Description
 -----------
 
-I wanted a date time picker similar to the one found on kayak.com.  I scoured the web looking for one when finally I can across the the example given in Jon Thorton's timepicker.
+I wanted a date time picker similar to the one found on kayak.com.  I scoured the web looking for one when finally I can across the example given in Jon Thorton's timepicker.
 
 However, at the time of downloading the example had falling out of sync with the dependant libraies.  Plus, I wanted to extend it a little bit farther.  For example, I didn't want dates to overlap, or start dates to be before end dates, or durations to show when greater than 24 hours, etc..  So I eventually decided to fork and here we are.
 
